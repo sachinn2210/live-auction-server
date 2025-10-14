@@ -1,4 +1,4 @@
-#  Multithreaded TCP Live Auction System (C++)
+#  Multithreaded TCP Based Live Auction Server (C++)
 
 This repository contains a **multithreaded TCP-based Live Auction Server and Client** built entirely in **C++** using socket programming. Multiple clients can connect simultaneously to participate in a **real-time auction** over TCP.
 
