@@ -1,265 +1,321 @@
 #include "AuctionServer.h"
+#include <sstream>
+#include <algorithm>
 
-//constructor
-AuctionServer::AuctionServer()
-{
-    cout<<"Starting auction server"<<endl;
-    if(!initializewinsock())
-    {
+// Constructor
+AuctionServer::AuctionServer() {
+    cout << "Starting auction server" << endl;
+    if (!initializewinsock()) {
         exit(EXIT_FAILURE);
     }
 }
 
-//destructor
-AuctionServer::~AuctionServer()
-{
-stopServer();
-cleanupwinsock();
-cout<<"Auction server shut down successfully."<<endl;
+// Destructor
+AuctionServer::~AuctionServer() {
+    stopServer();
+    cleanupwinsock();
+    cout << "Auction server shut down successfully." << endl;
 }
 
-//initliaze the windows socket
-bool AuctionServer::initializewinsock()
-{
+// Initialize WinSock
+bool AuctionServer::initializewinsock() {
     WSADATA wsaData;
+    int status = WSAStartup(MAKEWORD(2, 2), &wsaData);
 
-    int status=WSAStartup(MAKEWORD(2,2),&wsaData);
-
-    if(status!=0)
-    {
-        cout<<"WSAStartup failed with error: "<<status<<endl;
+    if (status != 0) {
+        cerr << "WSAStartup failed with error: " << status << endl;
         return false;
     }
 
-    cout<<"Winsock initialized successfully."<<endl;
+    cout << "Winsock initialized successfully." << endl;
     return true;
 }
 
-//clean up socket resources to avoid memory leaks
-void AuctionServer::cleanupwinsock()
-{
-    //close the listening socket
-    if(listen_socket!=INVALID_SOCKET)
-    {
+// Cleanup WinSock
+void AuctionServer::cleanupwinsock() {
+    if (listen_socket != INVALID_SOCKET) {
         closesocket(listen_socket);
-        listen_socket=INVALID_SOCKET;
+        listen_socket = INVALID_SOCKET;
     }
-    //Terminate winsock
     WSACleanup();
 }
 
-//create,bind and set server socket to listen mode
-//this function will accept both IPv4 and IPv6 adddresses.
-void AuctionServer::setupListenSocket()
-{
-    struct addrinfo * result=NULL,hints;//comes from wsc2pip.h. modern version of normal socket programming
-
+// Create/bind/listen socket
+void AuctionServer::setupListenSocket() {
+    struct addrinfo *result = NULL, hints;
     int errorcheck;
 
-    ZeroMemory(&hints,sizeof(hints));//initialize sturcture to zero
+    ZeroMemory(&hints, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+    hints.ai_flags = AI_PASSIVE;
 
-    hints.ai_family=AF_UNSPEC;//accept both IPV4 and IPV6 address
-    //AF_INET:IPv4 ,AF_INET6:IPv6 
-    hints.ai_socktype=SOCK_STREAM;//streaming socket
-    hints.ai_protocol=IPPROTO_TCP;//tcp protocol
-    hints.ai_flags=AI_PASSIVE;//server socker used to listen clients
-
-    //step 1:deduce server address and port
-    errorcheck=getaddrinfo(nullptr,PORT,&hints,&result);
-    if(errorcheck !=0 )
-    {
-        cout<<"geraddrinfo failed with error: "<<errorcheck<<endl;
+    errorcheck = getaddrinfo(nullptr, PORT, &hints, &result);
+    if (errorcheck != 0) {
+        cerr << "getaddrinfo failed with error: " << errorcheck << endl;
         cleanupwinsock();
         exit(EXIT_FAILURE);
     }
 
-    //step 2:create listening socket
-    listen_socket=socket(result->ai_family,result->ai_socktype,result->ai_protocol);
-    if(listen_socket==INVALID_SOCKET)
-    {
-       cerr<<"Error at socket:"<<WSAGetLastError()<<endl;
-       freeaddrinfo(result);
-       cleanupwinsock();
-       exit(EXIT_FAILURE);
+    listen_socket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+    if (listen_socket == INVALID_SOCKET) {
+        cerr << "Error at socket: " << WSAGetLastError() << endl;
+        freeaddrinfo(result);
+        cleanupwinsock();
+        exit(EXIT_FAILURE);
     }
 
-    //Step 3:bind socket to lcoal address and port
-    errorcheck=bind(listen_socket,result->ai_addr,(int)result->ai_addrlen);
-    if(errorcheck==SOCKET_ERROR)
-    {
-      cerr<<"Bind failed with error:"<<WSAGetLastError()<<endl;
-      freeaddrinfo(result);
-       cleanupwinsock();
-       exit(EXIT_FAILURE);
+    if (result->ai_family == AF_INET6) {
+        int ipv6only = 0;
+        if (setsockopt(listen_socket, IPPROTO_IPV6, IPV6_V6ONLY,
+                       (char *)&ipv6only, sizeof(ipv6only)) == SOCKET_ERROR) {
+            cerr << "Warning: Could not set dual-stack mode: " << WSAGetLastError() << endl;
+        } else {
+            cout << "Dual-stack mode enabled - accepting both IPv4 and IPv6 connections" << endl;
+        }
     }
 
-     freeaddrinfo(result);
+    errorcheck = bind(listen_socket, result->ai_addr, (int)result->ai_addrlen);
+    if (errorcheck == SOCKET_ERROR) {
+        cerr << "Bind failed with error: " << WSAGetLastError() << endl;
+        freeaddrinfo(result);
+        cleanupwinsock();
+        exit(EXIT_FAILURE);
+    }
 
-     //step 4:Set socket to listening mode
-     errorcheck=listen(listen_socket,MAX_CLIENTS);
+    freeaddrinfo(result);
+    errorcheck = listen(listen_socket, MAX_CLIENTS);
+    if (errorcheck == SOCKET_ERROR) {
+        cerr << "Listen failed with error: " << WSAGetLastError() << endl;
+        cleanupwinsock();
+        exit(EXIT_FAILURE);
+    }
 
-     if(errorcheck==SOCKET_ERROR)
-     {
-         cerr<<"Listen failed with error:"<<WSAGetLastError()<<endl;
-       cleanupwinsock();
-       exit(EXIT_FAILURE);
-     }
-
-     cout<<"Server socket listening on port"<<PORT<<"..\n";
-
+    cout << "Server socket listening on port " << PORT << "..." << endl;
 }
-//start the server
-void AuctionServer::startServer()
-{
+
+// Start the server main loop
+void AuctionServer::startServer() {
     setupListenSocket();
-    cout<<"Waiting for client to connect.."<<endl;
+    cout << "Waiting for clients to connect..." << endl;
 
-    SOCKET client_socket=INVALID_SOCKET;
+    SOCKET client_socket = INVALID_SOCKET;
 
-    while(true)
-    {
-        //accept new connection
-        client_socket=accept(listen_socket,NULL,NULL);
-
-        if(client_socket==INVALID_SOCKET)
-        {
-            if(WSAGetLastError()==WSAEINTR)
-            {
-                break;//exit loop if interrupt occured
-            }
-            cerr<<"Accept failed with error:"<<WSAGetLastError()<<endl;
+    while (true) {
+        client_socket = accept(listen_socket, NULL, NULL);
+        if (client_socket == INVALID_SOCKET) {
+            if (WSAGetLastError() == WSAEINTR) break;
+            cerr << "Accept failed with error: " << WSAGetLastError() << endl;
             continue;
         }
-    
 
-    //add client socket to list.
-    //locking clients vector
-    {
-    lock_guard<mutex>lock(clients_mutex);
-    client_sockets.push_back(client_socket);
-    cout<<"Client connected.Total clients: "<<client_sockets.size()<<endl;
-    }
-    //start new thread for connected client
-    thread client_thread(&AuctionServer::manageclient,this,client_socket);
-    client_thread.detach();//run the thread independently.
+        {
+            lock_guard<mutex> lock(clients_mutex);
+            client_sockets.push_back(client_socket);
+            cout << "Client connected. Total clients: " << client_sockets.size() << endl;
+        }
+
+        thread client_thread(&AuctionServer::manageclient, this, client_socket);
+        client_thread.detach();
     }
 }
 
-
-void AuctionServer::manageclient(SOCKET client_socket)
-{
+// Manage a connected client
+void AuctionServer::manageclient(SOCKET client_socket) {
     char buffer[512];
     int status;
-    int client_id=client_socket;//identify client
+    ClientInfo client;
+    client.socket = client_socket;
+    bool is_monitor = false;
 
-    string message="Welcome ! Current item: "+current_item.itemname+",Current Bid: "+ to_string(current_item.currentBid)+"\n";
+    string welcome = "Welcome to the Auction Server!\n";
+    send(client_socket, welcome.c_str(), (int)welcome.length(), 0);
 
-    send(client_socket,message.c_str(),(int) message.length(),0);
-
-    do
-    {
-      status=recv(client_socket,buffer,512,0);
-
-      if(status>0)
-      {
-        buffer[status]='\0';
-        string received_message(buffer);
-        cout<<"Received bid from client"<<client_id<<": "<<received_message<<endl;
-
-
-        try
-        {
-           //bid amount
-           double new_bid=stod(received_message);
-
-           //lock auction data 
-           lock_guard<mutex>lock(auction_mutex);
-
-           if(new_bid>current_item.currentBid)
-           {
-            current_item.currentBid=new_bid;
-            current_item.currentBiddersocketID=client_socket;
-
-            string success_message="NEW HIGH BID! "+to_string(new_bid) + "by Client "+to_string(client_id) +"\n";
-            broadcastMessage(success_message,INVALID_SOCKET);
-           }
-           else
-           {
-            string lower_message="Bid"+to_string(new_bid)+" is too low.Current high bid is "+ to_string(current_item.currentBid)+"\n";
-            send(client_socket,lower_message.c_str(),(int)lower_message.length(),0);
-           }
+    while (true) {
+        status = recv(client_socket, buffer, 512, 0);
+        if (status <= 0) {
+            cout << "[DISCONNECT] Client disconnected.\n";
+            if (!is_monitor) {
+                removeClient(client);
+                removeSocketFromList(client_socket);
+            } else {
+                lock_guard<mutex> lock(clients_mutex);
+                if (monitor_socket == client_socket) {
+                    monitor_socket = INVALID_SOCKET;
+                }
+                shutdown(client_socket, SD_BOTH);
+                closesocket(client_socket);
+                cout << "[MONITOR] Monitor client disconnected\n";
+            }
+            break;
         }
-        catch(const std::invalid_argument& e)
-        {
-            string error_message="Invalid input.Please enter numerical bid.\n";
-            send(client_socket,error_message.c_str(),(int)error_message.length(),0);
+
+        buffer[status] = '\0';
+        string msg(buffer);
+        msg.erase(remove(msg.begin(), msg.end(), '\n'), msg.end());
+        msg.erase(remove(msg.begin(), msg.end(), '\r'), msg.end());
+
+        cout << "[RECV] " << msg << endl;
+
+        if (msg == "MONITOR_CLIENT") {
+            is_monitor = true;
+            lock_guard<mutex> lock(clients_mutex);
+
+            if (monitor_socket != INVALID_SOCKET) {
+                cout << "[MONITOR] Replacing existing monitor client\n";
+                shutdown(monitor_socket, SD_BOTH);
+                closesocket(monitor_socket);
+            }
+
+            monitor_socket = client_socket;
+            cout << "[MONITOR] Monitor client registered\n";
+            string ack = "Monitor mode activated. You will receive all auction updates.\n";
+            send(client_socket, ack.c_str(), (int)ack.length(), 0);
+            continue;
         }
-        
-      }
-      else if(status==0)
-      {
-        cout<<"Connection is closed from client "<<client_id<<endl;
-      }
-      else
-      {
-        cerr<<" Recv failed with error: "<<WSAGetLastError()<<endl;
-      }
-    }while(status>0);
 
-    //critical section:remove socket from list
-    {
-        lock_guard<mutex>lock(clients_mutex);
+        if (is_monitor) continue;
 
-        for(auto it=client_sockets.begin();it!=client_sockets.end();it++)
-        {
-            if(*it ==client_socket)
-            {
-                client_sockets.erase(it);
-                break;
+        if (msg == "LEAVE") {
+            broadcastToRoom(client.auction_code, client.username + " left the auction.\n");
+            removeClient(client);
+            removeSocketFromList(client_socket);
+            break;
+        }
+
+        vector<string> parts = split(msg, '|');
+        if (parts.size() == 3 && parts[2] == "JOIN") {
+            client.username = parts[0];
+            client.auction_code = parts[1];
+            addClientToRoom(client);
+
+            string join_msg = "[JOIN] " + client.username + " joined " + client.auction_code + "\n";
+            broadcastToRoom(client.auction_code, join_msg);
+            broadcastToMonitor(join_msg);
+        }
+        else if (parts.size() == 3) {
+            string username = parts[0];
+            string auction_code = parts[1];
+            string bid_value = parts[2];
+
+            try {
+                double bid = stod(bid_value);
+                // Include auction_code in broadcast to monitor
+                string message = "NEW HIGH BID! " + to_string(bid) + " by " + username + " in " + auction_code + "\n";
+                broadcastToRoom(auction_code, message);
+                broadcastToMonitor(message);
+                cout << "[BID] " << username << " placed " << bid << " on " << auction_code << endl;
+            }
+            catch (...) {
+                string err = "Invalid bid input.\n";
+                send(client_socket, err.c_str(), (int)err.length(), 0);
             }
         }
-        cout<<"Client disconnected. Total clients: "<<client_sockets.size()<<endl;
+        else {
+            string err = "Unrecognized message format.\n";
+            send(client_socket, err.c_str(), (int)err.length(), 0);
+        }
     }
-   closesocket(client_socket);
 }
 
-void AuctionServer::broadcastMessage(string& message,SOCKET avoid_socket)
-{
-    //lock vector 
-    lock_guard<mutex>lock(clients_mutex);
-
-    for(SOCKET client_sock:client_sockets)
-    {
-        if(client_sock!=INVALID_SOCKET && client_sock !=avoid_socket)
-        {
-            int isSend=send(client_sock,message.c_str(),(int)message.length(),0);
-
-            if(isSend==SOCKET_ERROR)
-            {
-                cerr<<"Send failed to socket "<<client_sock<<"with error :" <<WSAGetLastError()<<endl;
+// Broadcast to all clients except avoid_socket
+void AuctionServer::broadcastMessage(string &message, SOCKET avoid_socket) {
+    lock_guard<mutex> lock(clients_mutex);
+    for (SOCKET client_sock : client_sockets) {
+        if (client_sock != INVALID_SOCKET && client_sock != avoid_socket) {
+            int sent = send(client_sock, message.c_str(), (int)message.length(), 0);
+            if (sent == SOCKET_ERROR) {
+                cerr << "Send failed to socket " << client_sock
+                     << " with error: " << WSAGetLastError() << endl;
             }
         }
     }
 }
 
-void AuctionServer::stopServer()
-{
-    //close all active client connections
-    {
-    lock_guard<mutex>lock(clients_mutex);
+// Send message to monitor
+void AuctionServer::broadcastToMonitor(const string &message) {
+    lock_guard<mutex> lock(clients_mutex);
+    if (monitor_socket != INVALID_SOCKET) {
+        int sent = send(monitor_socket, message.c_str(), (int)message.length(), 0);
+        if (sent == SOCKET_ERROR) {
+            cerr << "[MONITOR] Send failed with error: " << WSAGetLastError() << endl;
+            shutdown(monitor_socket, SD_BOTH);
+            closesocket(monitor_socket);
+            monitor_socket = INVALID_SOCKET;
+        }
+    }
+}
 
-    for(SOCKET client_socket:client_sockets)
-    {
-        shutdown(client_socket,SD_SEND);
+// Stop the server
+void AuctionServer::stopServer() {
+    lock_guard<mutex> lock(clients_mutex);
+
+    for (SOCKET client_socket : client_sockets) {
+        shutdown(client_socket, SD_BOTH);
         closesocket(client_socket);
     }
     client_sockets.clear();
-   }
-    
-   //close listening socket
-   if(listen_socket !=INVALID_SOCKET)
-   {
-    closesocket(listen_socket);
-    listen_socket=INVALID_SOCKET;
-   }
+
+    if (monitor_socket != INVALID_SOCKET) {
+        shutdown(monitor_socket, SD_BOTH);
+        closesocket(monitor_socket);
+        monitor_socket = INVALID_SOCKET;
+    }
+
+    if (listen_socket != INVALID_SOCKET) {
+        closesocket(listen_socket);
+        listen_socket = INVALID_SOCKET;
+    }
+}
+
+// Utility: split a string by delimiter
+vector<string> AuctionServer::split(string &s, char delimiter) {
+    vector<string> tokens;
+    string token;
+    istringstream tokenStream(s);
+    while (getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+void AuctionServer::addClientToRoom(ClientInfo client) {
+    lock_guard<mutex> lock(clients_mutex);
+    auction_rooms[client.auction_code].push_back(client);
+    cout << "[INFO] " << client.username << " joined auction " << client.auction_code << endl;
+}
+
+void AuctionServer::removeClient(ClientInfo client) {
+    lock_guard<mutex> lock(clients_mutex);
+    auto &room = auction_rooms[client.auction_code];
+    room.erase(remove_if(room.begin(), room.end(),
+                         [&](const ClientInfo &c) { return c.socket == client.socket; }),
+               room.end());
+    closesocket(client.socket);
+
+    if (room.empty()) {
+        auction_rooms.erase(client.auction_code);
+        cout << "[INFO] Auction room " << client.auction_code << " closed (empty)" << endl;
+    }
+
+    cout << "[INFO] " << client.username << " left auction " << client.auction_code << endl;
+}
+
+void AuctionServer::removeSocketFromList(SOCKET client_socket) {
+    lock_guard<mutex> lock(clients_mutex);
+    client_sockets.erase(remove(client_sockets.begin(), client_sockets.end(), client_socket),
+                         client_sockets.end());
+    shutdown(client_socket, SD_BOTH);
+    closesocket(client_socket);
+    cout << "[INFO] Socket removed from client list. Total clients: "
+         << client_sockets.size() << endl;
+}
+
+void AuctionServer::broadcastToRoom(const string &auction_code, const string &message) {
+    lock_guard<mutex> lock(clients_mutex);
+    auto &room = auction_rooms[auction_code];
+    for (auto &client : room) {
+        send(client.socket, message.c_str(), (int)message.length(), 0);
+    }
 }
