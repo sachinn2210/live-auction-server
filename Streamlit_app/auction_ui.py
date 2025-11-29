@@ -362,44 +362,22 @@ st.set_page_config(page_title="Live Auction Management Console", layout="wide", 
 # Load CSS once
 st.markdown(custom_css, unsafe_allow_html=True)
 
-# Beautiful Animated Header
+# Clean Header
 header_html = """
 <div style="text-align: center; padding: 2rem 0; margin-bottom: 2rem;">
-    <div style="position: relative; display: inline-block;">
-        <h1 style="
-            font-size: 3.5rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: gradientShift 3s ease infinite;
-            margin: 0;
-            text-shadow: 0 0 40px rgba(139, 92, 246, 0.5);
-            font-family: 'Poppins', sans-serif;
-            letter-spacing: -0.02em;
-        ">
-            🚀 Live Auction Management Console
-        </h1>
-        <div style="
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, #8b5cf6, transparent);
-            border-radius: 2px;
-            animation: expand 2s ease-in-out infinite;
-        "></div>
-    </div>
+    <h1 style="
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1f2937;
+        margin: 0;
+    ">
+        🚀 Live Auction Management Console
+    </h1>
     <p style="
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 1.2rem;
-        margin-top: 1rem;
-        font-weight: 300;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        color: #4b5563;
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+        font-weight: 400;
     ">
         Real-time bidding • Secure transactions • Live updates
     </p>
@@ -424,34 +402,29 @@ if not st.session_state.logged_in:
     with col_login:
         login_card = """
         <div style="
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
+            background: #ffffff;
+            border-radius: 12px;
             padding: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            animation: slideUp 0.5s ease-out;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         ">
             <div style="text-align: center; margin-bottom: 1.5rem;">
                 <div style="
                     width: 60px;
                     height: 60px;
-                    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+                    background: #6366f1;
                     border-radius: 50%;
                     display: inline-flex;
                     align-items: center;
                     justify-content: center;
                     font-size: 2rem;
-                    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
                     margin-bottom: 1rem;
                 ">🔑</div>
                 <h2 style="
                     margin: 0;
-                    background: linear-gradient(135deg, #667eea, #764ba2);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    font-size: 1.8rem;
-                    font-weight: 800;
+                    color: #1f2937;
+                    font-size: 1.75rem;
+                    font-weight: 700;
                 ">Login</h2>
                 <p style="color: #6b7280; margin-top: 0.5rem;">Access your auction dashboard</p>
             </div>
@@ -475,34 +448,29 @@ if not st.session_state.logged_in:
     with col_reg:
         register_card = """
         <div style="
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
+            background: #ffffff;
+            border-radius: 12px;
             padding: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            animation: slideUp 0.5s ease-out;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         ">
             <div style="text-align: center; margin-bottom: 1.5rem;">
                 <div style="
                     width: 60px;
                     height: 60px;
-                    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+                    background: #3b82f6;
                     border-radius: 50%;
                     display: inline-flex;
                     align-items: center;
                     justify-content: center;
                     font-size: 2rem;
-                    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
                     margin-bottom: 1rem;
                 ">📝</div>
                 <h2 style="
                     margin: 0;
-                    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    font-size: 1.8rem;
-                    font-weight: 800;
+                    color: #1f2937;
+                    font-size: 1.75rem;
+                    font-weight: 700;
                 ">Register</h2>
                 <p style="color: #6b7280; margin-top: 0.5rem;">Join as Buyer, Seller, or Admin</p>
             </div>
@@ -529,11 +497,11 @@ else:
     with st.sidebar:
         sidebar_header = f"""
         <div style="
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #6366f1;
             padding: 1.5rem;
-            border-radius: 16px;
+            border-radius: 12px;
             margin-bottom: 1.5rem;
-            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
         ">
             <div style="
@@ -546,14 +514,13 @@ else:
                 justify-content: center;
                 font-size: 2.5rem;
                 margin-bottom: 1rem;
-                border: 3px solid rgba(255, 255, 255, 0.3);
+                border: 2px solid rgba(255, 255, 255, 0.3);
             ">👤</div>
             <h3 style="
                 color: white;
                 margin: 0;
                 font-size: 1.5rem;
-                font-weight: 800;
-                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                font-weight: 700;
             ">{username}</h3>
             <div style="
                 display: inline-block;
@@ -564,7 +531,6 @@ else:
                 color: white;
                 font-weight: 600;
                 font-size: 0.9rem;
-                backdrop-filter: blur(10px);
             ">{role}</div>
         </div>
         """
@@ -731,12 +697,11 @@ else:
         
         server_status_html = """
         <div style="
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
+            background: #ffffff;
+            border-radius: 12px;
             padding: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin-bottom: 2rem;
         ">
         """
@@ -748,12 +713,11 @@ else:
         if server_running:
             status_card = """
             <div style="
-                background: linear-gradient(135deg, #10b981, #059669);
+                background: #10b981;
                 padding: 1.5rem;
-                border-radius: 16px;
+                border-radius: 12px;
                 color: white;
-                box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
-                animation: pulse 2s ease-in-out infinite;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             ">
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <div style="
@@ -768,8 +732,8 @@ else:
                     ">✅</div>
                     <div>
                         <div style="font-size: 0.9rem; opacity: 0.9;">Server Status</div>
-                        <div style="font-size: 1.8rem; font-weight: 800;">ACTIVE</div>
-                        <div style="font-size: 0.85rem; opacity: 0.8;">Running smoothly</div>
+                        <div style="font-size: 1.8rem; font-weight: 700;">ACTIVE</div>
+                        <div style="font-size: 0.85rem; opacity: 0.9;">Running smoothly</div>
                     </div>
                 </div>
             </div>
@@ -782,11 +746,11 @@ else:
         else:
             status_card = """
             <div style="
-                background: linear-gradient(135deg, #ef4444, #dc2626);
+                background: #ef4444;
                 padding: 1.5rem;
-                border-radius: 16px;
+                border-radius: 12px;
                 color: white;
-                box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             ">
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <div style="
@@ -801,8 +765,8 @@ else:
                     ">⏸️</div>
                     <div>
                         <div style="font-size: 0.9rem; opacity: 0.9;">Server Status</div>
-                        <div style="font-size: 1.8rem; font-weight: 800;">INACTIVE</div>
-                        <div style="font-size: 0.85rem; opacity: 0.8;">Not Running</div>
+                        <div style="font-size: 1.8rem; font-weight: 700;">INACTIVE</div>
+                        <div style="font-size: 0.85rem; opacity: 0.9;">Not Running</div>
                     </div>
                 </div>
             </div>
@@ -862,61 +826,56 @@ else:
     elif role == "Buyer" and page == "Active Auctions" and not st.session_state.get("in_auction_room", False):
         st_autorefresh(interval=10000, key="auction_list_refresh")
         
-        # Beautiful Header
+        # Clean Header
         header_html = """
         <div style="
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #6366f1;
             padding: 2rem;
-            border-radius: 24px;
+            border-radius: 12px;
             margin-bottom: 2rem;
-            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
             color: white;
         ">
-            <div style="font-size: 3rem; margin-bottom: 0.5rem;">💰</div>
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💰</div>
             <h2 style="
                 color: white;
                 margin: 0;
-                font-size: 2.5rem;
-                font-weight: 900;
-                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                font-size: 2rem;
+                font-weight: 700;
             ">Live Auctions</h2>
-            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Join active auctions and place your bids</p>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.95;">Join active auctions and place your bids</p>
         </div>
         """
         st.markdown(header_html, unsafe_allow_html=True)
         
-        # Join by Code - Enhanced container
+        # Join by Code - Clean container
         join_card = """
         <div style="
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
+            background: #ffffff;
+            border-radius: 12px;
             padding: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin-bottom: 2rem;
         ">
             <div style="text-align: center; margin-bottom: 1.5rem;">
                 <div style="
                     width: 60px;
                     height: 60px;
-                    background: linear-gradient(135deg, #f59e0b, #d97706);
+                    background: #f59e0b;
                     border-radius: 50%;
                     display: inline-flex;
                     align-items: center;
                     justify-content: center;
                     font-size: 2rem;
-                    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
                     margin-bottom: 1rem;
                 ">🎯</div>
                 <h3 style="
                     margin: 0;
-                    background: linear-gradient(135deg, #f59e0b, #d97706);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
+                    color: #1f2937;
                     font-size: 1.5rem;
-                    font-weight: 800;
+                    font-weight: 700;
                 ">Join Auction via Code</h3>
             </div>
         </div>
@@ -940,7 +899,7 @@ else:
 
         st.markdown("---")
         
-        # Enhanced Auction Feed Header
+        # Clean Auction Feed Header
         feed_header = """
         <div style="
             text-align: center;
@@ -948,11 +907,9 @@ else:
             padding: 1rem;
         ">
             <h3 style="
-                background: linear-gradient(135deg, #667eea, #764ba2);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                font-size: 1.8rem;
-                font-weight: 800;
+                color: #1f2937;
+                font-size: 1.75rem;
+                font-weight: 700;
                 margin: 0;
             ">🔥 Auction Feed</h3>
         </div>
@@ -964,22 +921,21 @@ else:
         if not auctions:
             empty_state = """
             <div style="
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(20px);
-                border-radius: 24px;
+                background: #ffffff;
+                border-radius: 12px;
                 padding: 4rem 2rem;
                 text-align: center;
-                border: 1px solid rgba(255, 255, 255, 0.3);
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                border: 1px solid #e5e7eb;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             ">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">🔍</div>
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
                 <h3 style="
-                    color: #6b7280;
+                    color: #4b5563;
                     font-size: 1.5rem;
                     font-weight: 700;
                     margin: 0;
                 ">No Active Auctions</h3>
-                <p style="color: #9ca3af; margin-top: 0.5rem;">Check back later for new auctions</p>
+                <p style="color: #6b7280; margin-top: 0.5rem;">Check back later for new auctions</p>
             </div>
             """
             st.markdown(empty_state, unsafe_allow_html=True)
@@ -990,13 +946,11 @@ else:
                     with cols[i % 2]: # Cycle between 2 columns
                         auction_card_html = f"""
                         <div style="
-                            background: rgba(255, 255, 255, 0.95);
-                            backdrop-filter: blur(20px);
-                            border-radius: 24px;
+                            background: #ffffff;
+                            border-radius: 12px;
                             padding: 1.5rem;
-                            border: 1px solid rgba(255, 255, 255, 0.3);
-                            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-                            transition: all 0.3s ease;
+                            border: 1px solid #e5e7eb;
+                            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                             margin-bottom: 1.5rem;
                         " class="auction-card">
                         """
@@ -1144,29 +1098,28 @@ else:
             else:
                 st.toast(f"✅ Connected to auction {auction.get('auction_code')}!")
 
-        # Main Auction Room UI with Beautiful Header
+        # Main Auction Room UI with Clean Header
         auction_header = f"""
         <div style="
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #6366f1;
             padding: 2rem;
-            border-radius: 24px;
+            border-radius: 12px;
             margin-bottom: 2rem;
-            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
             color: white;
         ">
-            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔨</div>
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔨</div>
             <h2 style="
                 color: white;
                 margin: 0;
-                font-size: 2rem;
-                font-weight: 800;
-                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                font-size: 1.75rem;
+                font-weight: 700;
             ">Auction Room</h2>
             <p style="
                 margin: 0.5rem 0 0 0;
-                font-size: 1.2rem;
-                opacity: 0.9;
+                font-size: 1.1rem;
+                opacity: 0.95;
             ">{auction.get('product_name')}</p>
             <div style="
                 display: inline-block;
@@ -1175,7 +1128,6 @@ else:
                 border-radius: 20px;
                 margin-top: 1rem;
                 font-weight: 600;
-                backdrop-filter: blur(10px);
             ">Code: {auction.get('auction_code')}</div>
         </div>
         """
@@ -1258,25 +1210,23 @@ else:
                 mins, secs = divmod(int(remaining), 60)
                 timer_display = f"{mins:02d}:{secs:02d}"
 
-           # Display Timer prominently with enhanced styling
+           # Display Timer with clean styling
                 if remaining <= 0:
                     timer_html = f"""
                     <div style="
-                        background: linear-gradient(135deg, #ef4444, #dc2626);
+                        background: #ef4444;
                         padding: 2rem;
-                        border-radius: 20px;
+                        border-radius: 12px;
                         text-align: center;
                         color: white;
-                        box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
-                        animation: pulse 2s ease-in-out infinite;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                     ">
-                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔒</div>
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔒</div>
                         <h2 style="
                             color: white;
                             margin: 0;
-                            font-size: 2rem;
-                            font-weight: 800;
-                            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                            font-size: 1.75rem;
+                            font-weight: 700;
                         ">AUCTION ENDED</h2>
                     </div>
                     """
@@ -1284,21 +1234,19 @@ else:
                 elif remaining < 30:
                     timer_html = f"""
                     <div style="
-                        background: linear-gradient(135deg, #f59e0b, #d97706);
+                        background: #f59e0b;
                         padding: 2rem;
-                        border-radius: 20px;
+                        border-radius: 12px;
                         text-align: center;
                         color: white;
-                        box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4);
-                        animation: pulse 1s ease-in-out infinite;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                     ">
-                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔥</div>
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔥</div>
                         <h2 style="
                             color: white;
                             margin: 0;
-                            font-size: 2rem;
-                            font-weight: 800;
-                            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                            font-size: 1.75rem;
+                            font-weight: 700;
                         ">LAST CHANCE: {timer_display}</h2>
                     </div>
                     """
@@ -1306,21 +1254,20 @@ else:
                 else:
                     timer_html = f"""
                     <div style="
-                        background: linear-gradient(135deg, #3b82f6, #2563eb);
+                        background: #3b82f6;
                         padding: 2rem;
-                        border-radius: 20px;
+                        border-radius: 12px;
                         text-align: center;
                         color: white;
-                        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                     ">
-                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">⏱️</div>
-                        <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">Time Remaining</div>
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⏱️</div>
+                        <div style="font-size: 0.9rem; opacity: 0.95; margin-bottom: 0.5rem;">Time Remaining</div>
                         <h2 style="
                             color: white;
                             margin: 0;
-                            font-size: 2.5rem;
-                            font-weight: 900;
-                            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                            font-size: 2.25rem;
+                            font-weight: 700;
                             font-family: 'Courier New', monospace;
                         ">{timer_display}</h2>
                     </div>
