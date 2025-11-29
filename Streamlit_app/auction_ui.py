@@ -382,8 +382,7 @@ if not st.session_state.logged_in:
     with col_login:
         with st.container(border=True): # Use a container for visual separation
             st.markdown("## 🔑 Login")
-            st.markdown("<p style='color:#ccc;'>Access your auction dashboard.</p>", unsafe_allow_html=True)
-            st.markdown("---") 
+            st.markdown("<p style='color:black;'>Access your auction dashboard.</p>", unsafe_allow_html=True)
             username = st.text_input("Username", key="login_user", placeholder="Enter your username")
             password = st.text_input("Password", type="password", key="login_pass", placeholder="Enter your password")
             st.markdown("<br>", unsafe_allow_html=True)
@@ -401,13 +400,11 @@ if not st.session_state.logged_in:
     with col_reg:
         with st.container(border=True): # Use a container for visual separation
             st.markdown("## 📝 Register")
-            st.markdown("<p style='color:#ccc;'>Join the platform as a Buyer, Seller, or Admin.</p>", unsafe_allow_html=True)
-            st.markdown("---")
+            st.markdown("<p style='color:black;'>Join the platform as a Buyer, Seller, or Admin.</p>", unsafe_allow_html=True)
             new_user = st.text_input("Username", key="reg_user", placeholder="Choose a username")
             new_pass = st.text_input("Password", type="password", key="reg_pass", placeholder="Choose a strong password")
             new_email = st.text_input("Email (Optional)", key="reg_email", placeholder="Enter your email for notifications")
-            role = st.selectbox("Role", ["Admin", "Seller", "Buyer"], index=2, help="Select your primary role in the auction system.")
-            st.markdown("<br>", unsafe_allow_html=True)
+            role = st.selectbox("Role", ["Admin", "Seller", "Buyer"], index=2)
             if st.button("Register", use_container_width=True):
                 if new_user and new_pass:
                     if register_user(new_user, new_pass, role, new_email):
@@ -423,8 +420,7 @@ else:
     # 2. Refined Sidebar
     with st.sidebar:
         st.markdown(f"## 👤 {username}")
-        st.markdown(f"**Role:** <span style='color: #2ecc71;'>{role}</span>", unsafe_allow_html=True)
-        st.markdown("---")
+        st.markdown(f"**Role:** <span style='color:  green;'>{role}</span>", unsafe_allow_html=True)
 
         # Navigation based on role
         nav_options = {
@@ -935,7 +931,7 @@ else:
 
     # 8. Admin UI: Bid History (MongoDB)
     elif role == "Admin" and page == "Bid History":
-        st.header("📜 Detailed Bid History (MongoDB)")
+        st.header("📜  Bid History ")
         try:
             client = MongoClient("mongodb://localhost:27017")
             db = client["auction_data"]
@@ -952,9 +948,44 @@ else:
                 for doc in history:
                     # Use a clean container for each auction history
                     with st.container(border=True):
-                        st.markdown(f"### {doc.get('product_name', 'N/A')}", unsafe_allow_html=True)
-                        st.caption(f"Code: `{doc.get('auction_code', 'N/A')}` | Ended: {doc.get('closed_at').strftime('%Y-%m-%d %H:%M:%S') if doc.get('closed_at') else 'N/A'}")
-                        st.success(f"**Winner:** {doc.get('winner', 'No Bids')} | **Final Price:** **<span style='font-size: 1.5rem;'>${doc.get('final_bid', 'N/A')}</span>**")
+                        # ---- Sanitize values safely ----
+                        product_name = str(doc.get("product_name") or "N/A")
+                        auction_code = str(doc.get("auction_code") or "N/A")
+
+                        closed_at = doc.get("closed_at")
+                        if hasattr(closed_at, "strftime"):
+                            closed_at_str = closed_at.strftime("%Y-%m-%d %H:%M:%S")
+                        else:
+                            closed_at_str = str(closed_at) if closed_at else "N/A"
+
+                        # Final bid formatting
+                        final_bid_raw = doc.get("final_bid")
+                        from bson.decimal128 import Decimal128
+                        try:
+                            if isinstance(final_bid_raw, Decimal128):
+                                final_bid = f"{float(final_bid_raw.to_decimal()):.2f}"
+                            else:
+                                final_bid = f"{float(final_bid_raw):.2f}"
+                        except:
+                            final_bid = str(final_bid_raw)
+
+                        winner = str(doc.get("winner") or "No Bids")
+
+                        # ---- Styled HTML block (matches your theme & card layout) ----
+                        st.markdown(f"""
+                        <div class="bid-card">
+                            <div class="bid-title">{product_name}</div>
+                            <div class="bid-subinfo">
+                                <b>Code:</b> {auction_code} &nbsp; | &nbsp;
+                                <b>Ended:</b> {closed_at_str}
+                            </div>
+                            <div class="bid-winner-box">
+                                Winner: <b>{winner}</b> &nbsp; | &nbsp;
+                                Final Price: <span>${final_bid}</span>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
                         
                         # Use an expander for the individual bids
                         with st.expander("View All Bids"):

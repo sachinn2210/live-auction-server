@@ -107,22 +107,19 @@ h2 {
 /* ======================================================
    SIDEBAR
    ====================================================== */
-[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, var(--bg-elevated), var(--bg-secondary));
-    border-right: 1px solid var(--border-default);
+[data-testid="stSidebar"] .stRadio label {
+    display: flex !important;
+    align-items: center !important;
+    gap: var(--primary-200) !important;
+    font-size: 3rem !important;
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
 }
 
-/* Sidebar radio buttons */
-[data-testid="stSidebar"] .stRadio label {
-    padding: 10px;
-    border-radius: var(--radius-md);
-    transition: var(--transition);
-    cursor: pointer;
-}
 [data-testid="stSidebar"] .stRadio div:has(input:checked) label {
-    background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
     color: white !important;
-    box-shadow: var(--shadow-md);
+    font-weight: 1500 !important;
 }
 
 /* ======================================================
@@ -139,68 +136,28 @@ input:focus, textarea:focus {
     border-color: var(--primary-500) !important;
     box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
 }
-/* ============================
-   FIXED SELECTBOX (Streamlit-safe)
-   ============================ */
 
-/* Outer select container */
+/* ======================================================
+   FIXED SELECTBOX (DROPDOWN)
+   ====================================================== */
 .stSelectbox > div {
-    background-color: var(--bg-primary) !important;
     border: 2px solid var(--border-default) !important;
     border-radius: var(--radius-md) !important;
-    transition: var(--transition);
-    box-shadow: var(--shadow-xs);
+    background: var(--bg-primary) !important;
 }
-
-/* Selected value box */
-.stSelectbox [data-baseweb="select"] > div:nth-child(1) {
-    padding: 10px 12px !important;
-    min-height: 46px !important;
-    display: flex !important;
-    align-items: center !important;
-    border-radius: var(--radius-md) !important;
+.stSelectbox > div:hover {
+    border-color: var(--border-strong) !important;
 }
-
-/* Dropdown arrow fix */
-.stSelectbox svg {
-    width: 20px !important;
-    height: 20px !important;
-    color: var(--text-secondary) !important;
-}
-
-/* Popover (dropdown menu) */
-[data-baseweb="popover"] {
-    border-radius: var(--radius-md) !important;
-    box-shadow: var(--shadow-lg) !important;
-    border: 1px solid var(--border-light) !important;
-}
-
-/* Dropdown menu background */
 [role="listbox"] {
-    background: var(--bg-elevated) !important;
-    border-radius: var(--radius-md) !important;
-    padding: 6px 0 !important;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--bg-elevated);
 }
-
-/* Each option */
-[role="option"] {
-    padding: 10px 14px !important;
-    transition: background var(--transition-fast);
-    border-radius: var(--radius-sm) !important;
-}
-
-/* Hover */
-[role="option"]:hover {
-    background: var(--surface-hover) !important;
-}
-
-/* Selected option */
 [role="option"][aria-selected="true"] {
     background: var(--primary-100) !important;
     color: var(--primary-700) !important;
-    font-weight: 600 !important;
+    font-weight: 600;
 }
-
 
 /* ======================================================
    FIXED STREAMLIT BUTTONS (FINAL)
@@ -287,4 +244,114 @@ input:focus, textarea:focus {
 @keyframes slideIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0px); }
+}
+
+
+[data-baseweb="select"] input {
+    opacity: 0 !important;       /* Invisible */
+    width: 0 !important;         /* No visible space */
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    position: absolute !important;
+    left: 0;
+    top: 0;
+}
+
+/* Clean value display container */
+[data-baseweb="select"] > div:first-child {
+    padding-right: 36px !important;   /* space for arrow */
+    display: flex !important;
+    align-items: center !important;
+    background-color: var(--bg-elevated) !important;
+    border-radius: var(--radius-md) !important;
+}
+
+/* Align arrow properly */
+[data-baseweb="select"] svg {
+    position: absolute !important;
+    right: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%);
+    pointer-events: none !important;  /* clicking arrow still opens dropdown */
+}
+
+/* ==========================================================
+   BID HISTORY PAGE — CARD UI
+   ========================================================== */
+
+/* Container wrapping each auction history block */
+.bid-card {
+    background: #ffffff;
+    padding: 1.6rem 1.8rem;
+    margin-bottom: 1.4rem;
+    border-radius: 18px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: 0.25s ease;
+    animation: fadeIn 0.45s ease;
+}
+
+/* Hover effect */
+.bid-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+/* Auction Title (N/A or Product Name) */
+.bid-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #6d28d9;
+    margin-bottom: 0.4rem;
+}
+
+/* Sub-info row (code + date/time) */
+.bid-subinfo {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+
+/* Winner highlight box */
+.bid-winner-box {
+    background: #ecfdf5;
+    border-left: 5px solid #10b981;
+    padding: 0.9rem 1rem;
+    border-radius: 10px;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: #065f46;
+}
+
+/* Winner price highlight */
+.bid-winner-box span {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: #047857;
+}
+
+/* View Bids Button Container */
+.bid-btn-container button {
+    width: 100% !important;
+    border-radius: 12px !important;
+    padding: 0.65rem !important;
+    font-weight: 600 !important;
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6) !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+    transition: 0.25s;
+}
+
+/* Hover */
+.bid-btn-container button:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, #6d28d9, #7c3aed) !important;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }

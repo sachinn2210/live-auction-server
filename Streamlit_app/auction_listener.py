@@ -163,6 +163,12 @@ def log_bid_to_mongo(product_id, bidder, bid_value):
 def finalize_mongo_auction(product_id, winner, final_bid):
     try:
         doc = active_col.find_one({"product_id": product_id})
+
+        product = products_col.find_one({"_id": ObjectId(product_id)})
+
+        # Extract metadata safely
+        product_name = product.get("name", "Unknown") if product else "Unknown"
+        auction_code = product.get("auction_code", "N/A") if product else "N/A"
         if doc:
             # sanitize bids and numeric fields
             bids = doc.get("bids", [])
@@ -179,6 +185,8 @@ def finalize_mongo_auction(product_id, winner, final_bid):
                 # timestamps are fine (datetime)
 
             doc["winner"] = str(winner)
+            doc["product_name"] = product_name
+            doc["auction_code"] = auction_code
             try:
                 doc["final_bid"] = float(final_bid)
             except Exception:
