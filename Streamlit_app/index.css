@@ -1,0 +1,290 @@
+/* ======================================================
+   ROOT THEME VARIABLES
+   ====================================================== */
+:root {
+    --primary-50: #f5f3ff;
+    --primary-100: #ede9fe;
+    --primary-200: #ddd6fe;
+    --primary-300: #c4b5fd;
+    --primary-400: #a78bfa;
+    --primary-500: #8b5cf6;
+    --primary-600: #7c3aed;
+    --primary-700: #6d28d9;
+    --primary-800: #5b21b6;
+
+    --accent-blue: #3b82f6;
+    --accent-green: #10b981;
+    --accent-orange: #f59e0b;
+    --accent-pink: #ec4899;
+
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --bg-tertiary: #f3f4f6;
+    --bg-elevated: #ffffff;
+
+    --surface-card: #ffffff;
+    --surface-hover: #f9fafb;
+    --surface-active: #f3f4f6;
+
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-muted: #9ca3af;
+    --text-inverse: #ffffff;
+
+    --border-light: #e5e7eb;
+    --border-default: #d1d5db;
+    --border-strong: #9ca3af;
+    --border-focus: var(--primary-500);
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.12);
+    --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.4);
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+    --radius-full: 9999px;
+
+    --transition-fast: 0.15s ease;
+    --transition: 0.2s ease;
+    --transition-slow: 0.35s ease;
+}
+
+/* ======================================================
+   BASE APP & SCROLLBAR
+   ====================================================== */
+.stApp {
+    background: linear-gradient(135deg, #fafafa, #f3f4f6);
+    font-family: "Inter", sans-serif;
+    color: var(--text-primary);
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border-default);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--border-strong);
+}
+
+/* ======================================================
+   HEADINGS
+   ====================================================== */
+h1 {
+    background: linear-gradient(135deg, var(--primary-700), var(--primary-400));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 2.4rem !important;
+    font-weight: 900 !important;
+    text-align: center;
+}
+h2 {
+    border-left: 5px solid var(--primary-500);
+    padding-left: 12px;
+    font-weight: 700 !important;
+}
+
+/* ======================================================
+   CARDS & CONTAINERS
+   ====================================================== */
+.stContainer {
+    border-radius: var(--radius-xl) !important;
+    background: white !important;
+    padding: 1.5rem !important;
+    border: 1px solid var(--border-light) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+/* ======================================================
+   SIDEBAR
+   ====================================================== */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, var(--bg-elevated), var(--bg-secondary));
+    border-right: 1px solid var(--border-default);
+}
+
+/* Sidebar radio buttons */
+[data-testid="stSidebar"] .stRadio label {
+    padding: 10px;
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+    cursor: pointer;
+}
+[data-testid="stSidebar"] .stRadio div:has(input:checked) label {
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+    color: white !important;
+    box-shadow: var(--shadow-md);
+}
+
+/* ======================================================
+   INPUTS & TEXTAREAS
+   ====================================================== */
+input, textarea {
+    background: var(--bg-primary) !important;
+    border: 2px solid var(--border-default) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 10px !important;
+    transition: var(--transition);
+}
+input:focus, textarea:focus {
+    border-color: var(--primary-500) !important;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+/* ============================
+   FIXED SELECTBOX (Streamlit-safe)
+   ============================ */
+
+/* Outer select container */
+.stSelectbox > div {
+    background-color: var(--bg-primary) !important;
+    border: 2px solid var(--border-default) !important;
+    border-radius: var(--radius-md) !important;
+    transition: var(--transition);
+    box-shadow: var(--shadow-xs);
+}
+
+/* Selected value box */
+.stSelectbox [data-baseweb="select"] > div:nth-child(1) {
+    padding: 10px 12px !important;
+    min-height: 46px !important;
+    display: flex !important;
+    align-items: center !important;
+    border-radius: var(--radius-md) !important;
+}
+
+/* Dropdown arrow fix */
+.stSelectbox svg {
+    width: 20px !important;
+    height: 20px !important;
+    color: var(--text-secondary) !important;
+}
+
+/* Popover (dropdown menu) */
+[data-baseweb="popover"] {
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-lg) !important;
+    border: 1px solid var(--border-light) !important;
+}
+
+/* Dropdown menu background */
+[role="listbox"] {
+    background: var(--bg-elevated) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 6px 0 !important;
+}
+
+/* Each option */
+[role="option"] {
+    padding: 10px 14px !important;
+    transition: background var(--transition-fast);
+    border-radius: var(--radius-sm) !important;
+}
+
+/* Hover */
+[role="option"]:hover {
+    background: var(--surface-hover) !important;
+}
+
+/* Selected option */
+[role="option"][aria-selected="true"] {
+    background: var(--primary-100) !important;
+    color: var(--primary-700) !important;
+    font-weight: 600 !important;
+}
+
+
+/* ======================================================
+   FIXED STREAMLIT BUTTONS (FINAL)
+   ====================================================== */
+.stButton button,
+.stFormSubmitButton button,
+[data-testid="baseButton-primary"] button,
+[data-testid="baseButton-secondary"] button,
+.stDownloadButton button {
+    width: 100% !important;
+    padding: 0.75rem 1.2rem !important;
+
+    border-radius: var(--radius-lg) !important;
+    border: none !important;
+
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+
+    background: linear-gradient(135deg, var(--primary-600), var(--primary-500)) !important;
+    color: white !important;
+
+    box-shadow: var(--shadow-md) !important;
+    transition: var(--transition) !important;
+}
+
+/* Hover */
+.stButton button:hover,
+.stFormSubmitButton button:hover {
+    background: linear-gradient(135deg, var(--primary-700), var(--primary-600)) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-lg), var(--shadow-glow) !important;
+}
+
+/* Active */
+.stButton button:active,
+.stFormSubmitButton button:active {
+    transform: translateY(0px) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+/* Fix: Prevent invisible overlay blocking clicks */
+.stButton button::before,
+.stFormSubmitButton button::before {
+    content: none !important;
+}
+
+/* ======================================================
+   EXPANDER
+   ====================================================== */
+[data-testid="stExpander"] {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light) !important;
+    background: white !important;
+}
+[data-testid="stExpander"] summary:hover {
+    background: var(--surface-hover);
+}
+
+/* ======================================================
+   METRIC
+   ====================================================== */
+[data-testid="metric-container"] {
+    border-radius: var(--radius-lg);
+    background: var(--bg-elevated);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ======================================================
+   TABLES
+   ====================================================== */
+[data-testid="stDataFrame"] {
+    border-radius: 12px;
+    border: 1px solid var(--border-default);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ======================================================
+   ANIMATIONS
+   ====================================================== */
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0px); }
+}

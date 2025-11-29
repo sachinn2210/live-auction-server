@@ -8,8 +8,9 @@ import websockets
 import re
 from mysql.connector import pooling
 import logging
-
-# --- Configuration ---
+import gridfs
+from bson import ObjectId
+    
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = 8000
 WS_HOST = "0.0.0.0"
@@ -26,18 +27,68 @@ DB_CONFIG = {
 
 MONGO_URI = "mongodb://localhost:27017"
 
-# --- Setup logging ---
+# Setup logging 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
-# --- MongoDB ---
+#MongoDB 
 mongo_client = MongoClient(MONGO_URI)
 mongo_db = mongo_client["auction_data"]
 active_col = mongo_db["active_auctions"]
 history_col = mongo_db["auction_history"]
-
-# --- MySQL connection pool ---
+products_col = mongo_db["products"]
+fs = gridfs.GridFS(mongo_db)
+waiting_col = mongo_db["waiting_room"]
+#MySQL connection pool 
 connection_pool = None
+
+
+def add_to_waiting_room(auction_code: str, username: str):
+    """
+    Adds a buyer to the waiting list for an auction (de-duplicated by username).
+    """
+    try:
+        waiting_col.update_one(
+            {"auction_code": auction_code},
+            {"$addToSet": {"users": {"username": username, "joined_at": datetime.utcnow()}}},
+            upsert=True
+        )
+    except Exception as e:
+        log.error(f"Failed to add to waiting room {auction_code} : {e}")
+
+def remove_from_waiting_room(auction_code: str, username: str):
+    """
+    Removes a buyer from the waiting list for an auction.
+    """
+    try:
+        waiting_col.update_one(
+            {"auction_code": auction_code},
+            {"$pull": {"users": {"username": username}}}
+        )
+    except Exception as e:
+        log.error(f"Failed to remove from waiting room {auction_code} : {e}")
+
+def get_waiting_users(auction_code: str):
+    """
+    Returns a list of waiting users for auction_code: [{username, joined_at}, ...]
+    """
+    try:
+        doc = waiting_col.find_one({"auction_code": auction_code})
+        if not doc:
+            return []
+        return doc.get("users", [])
+    except Exception as e:
+        log.error(f"Failed to fetch waiting users for {auction_code} : {e}")
+        return []
+
+def clear_waiting_room(auction_code: str):
+    """
+    Remove the waiting room doc for the auction (optional/cleanup).
+    """
+    try:
+        waiting_col.delete_one({"auction_code": auction_code})
+    except Exception as e:
+        log.error(f"Failed to clear waiting room {auction_code} : {e}")
 
 def init_db_pool():
     global connection_pool
@@ -56,7 +107,7 @@ def update_current_bid_by_code(new_bid: float, bidder_id: str, auction_code: str
         cursor = conn.cursor()
         cursor.execute("""
             UPDATE auctions
-            SET current_bid=%s, current_bidder=%s, last_update=NOW()
+            SET current_bid=%s, current_bidder=%s, last_update=UTC_TIMESTAMP()
             WHERE auction_code=%s AND status='active'
         """, (new_bid, bidder_id, auction_code))
         conn.commit()
@@ -80,52 +131,139 @@ def get_product_id_by_code(auction_code: str):
 
 def log_bid_to_mongo(product_id, bidder, bid_value):
     try:
+        # ensure numeric type for MongoDB storage
+        try:
+            bid_amount = float(bid_value)
+        except Exception:
+            # if it was Decimal or malformed, coerce via str->float as last resort
+            bid_amount = float(str(bid_value))
+
         bid_entry = {
-            "bidder": bidder,
-            "amount": float(bid_value),
+            "bidder": str(bidder),
+            "amount": bid_amount,
             "timestamp": datetime.utcnow()
         }
+
         active_col.update_one(
             {"product_id": product_id},
-            {"$push": {"bids": bid_entry},
-             "$set": {"last_bid": bid_value, "last_bidder": bidder, "last_update": datetime.utcnow()}},
+            {
+                "$push": {"bids": bid_entry},
+                "$set": {
+                    "last_bid": bid_amount,
+                    "last_bidder": str(bidder),
+                    "last_update": datetime.utcnow()
+                }
+            },
             upsert=True
         )
-        log.info(f"MongoDB updated for {product_id}: {bidder} → {bid_value}")
+        log.info(f"MongoDB updated for {product_id}: {bidder} → {bid_amount}")
     except Exception as e:
-        log.error(f"Error logging to MongoDB: {e}")
+        log.exception(f"Error logging to MongoDB: {e}")
 
 def finalize_mongo_auction(product_id, winner, final_bid):
     try:
         doc = active_col.find_one({"product_id": product_id})
         if doc:
-            doc["winner"] = winner
-            doc["final_bid"] = final_bid
+            # sanitize bids and numeric fields
+            bids = doc.get("bids", [])
+            for b in bids:
+                # convert bid amounts
+                if "amount" in b:
+                    try:
+                        b["amount"] = float(b["amount"])
+                    except Exception:
+                        b["amount"] = float(str(b["amount"]))
+                # ensure bidder is a string
+                if "bidder" in b:
+                    b["bidder"] = str(b["bidder"])
+                # timestamps are fine (datetime)
+
+            doc["winner"] = str(winner)
+            try:
+                doc["final_bid"] = float(final_bid)
+            except Exception:
+                doc["final_bid"] = float(str(final_bid))
             doc["closed_at"] = datetime.utcnow()
+
+            # insert sanitized doc into history
             history_col.insert_one(doc)
             active_col.delete_one({"product_id": product_id})
             log.info(f"Moved {product_id} → auction_history")
+
+        # remove product binary/image if you want cleanup
+        # delete_product_from_mongo(product_id)
+        products_col.update_one(
+        {"_id": ObjectId(product_id)},
+        {"$set": {
+            "status": "sold",
+            "sold_to": winner,
+            "sold_price": float(final_bid),  
+            "sold_at": datetime.utcnow()
+        }}
+    )
     except Exception as e:
-        log.error(f"Error finalizing auction: {e}")
+        log.exception(f"Error finalizing auction: {e}")
+
+def save_product_to_mongo(seller, name, description, base_price, image_bytes):
+    image_file_id = fs.put(image_bytes)
+
+    product_doc = {
+        "seller": seller,
+        "name": name,
+        "description": description,
+        "base_price": base_price,
+        "image_file_id": image_file_id,
+        "ai_generated_score": None,
+        "ai_flag": False,
+        "created_at": datetime.utcnow(),
+        "status": "available"
+    }
+
+    result = products_col.insert_one(product_doc)
+    return str(result.inserted_id)
+
+def get_product_from_mongo(product_id):
+    product = products_col.find_one({"_id": ObjectId(product_id)})
+    if not product:
+        return None
+
+    image_bytes = fs.get(product["image_file_id"]).read()
+
+    return product, image_bytes
+
+def delete_product_from_mongo(product_id):
+    try:
+        doc = products_col.find_one({"_id": ObjectId(product_id)})
+        if not doc:
+            return
+        
+        try:
+            fs.delete(doc["image_file_id"])
+        except:
+            pass
+        
+        products_col.delete_one({"_id": ObjectId(product_id)})
+        log.info(f"Deleted product {product_id} from MongoDB")
+    except Exception as e:
+        log.error(f"Error deleting product from MongoDB: {e}")
 
 def parse_bid_message(msg: str):
     try:
         msg = msg.strip()
-        # Updated regex for bid messages that include auction_code
-        if "NEW HIGH BID!" in msg:
-            match = re.search(r'NEW HIGH BID!\s+([\d.]+)\s+by\s+(\S+)\s+in\s+(AUC-[A-Z0-9]+)', msg)
-            if match:
-                bid = float(match.group(1))
-                bidder = match.group(2).strip()
-                auction_code = match.group(3).strip()
-                return bid, bidder, auction_code
-        # Parse join messages
-        if "[JOIN]" in msg:
-            match = re.search(r'\[JOIN\]\s+(\S+)\s+joined\s+(AUC-[A-Z0-9]+)', msg)
-            if match:
-                username = match.group(1)
-                auction_code = match.group(2)
-                return None, {"type": "join", "username": username, "auction_code": auction_code}, None
+        # NEW HIGH BID! <amount> by <username> in <AUC-XXXX>
+        m = re.search(r'NEW\s+HIGH\s+BID!\s*([0-9]+(?:\.[0-9]+)?)\s+by\s+(.+?)\s+in\s+(AUC-[A-Z0-9]+)', msg, re.IGNORECASE)
+        if m:
+            bid = float(m.group(1))
+            bidder = m.group(2).strip()
+            auction_code = m.group(3).strip()
+            return bid, bidder, auction_code
+
+        # [JOIN] <username> joined <AUC-XXXX>
+        m2 = re.search(r'\[JOIN\]\s+(.+?)\s+joined\s+(AUC-[A-Z0-9]+)', msg, re.IGNORECASE)
+        if m2:
+            username = m2.group(1).strip()
+            auction_code = m2.group(2).strip()
+            return None, {"type": "join", "username": username, "auction_code": auction_code}, None
     except Exception as e:
         log.warning(f"Parse error: {e} — msg: {msg}")
     return None, None, None
@@ -238,6 +376,7 @@ async def main():
         ws_server.close()
         await ws_server.wait_closed()
         log.info("Shutdown complete")
+
 
 if __name__ == "__main__":
     try:

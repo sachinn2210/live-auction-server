@@ -48,7 +48,7 @@ class AuctionServer
 
     map<string,vector<ClientInfo>>auction_rooms;
     SOCKET listen_socket=INVALID_SOCKET;
-    SOCKET monitor_socket=INVALID_SOCKET;  // ADDED: Monitor socket declaration
+    SOCKET monitor_socket=INVALID_SOCKET;  
 
     bool initializewinsock();
     void cleanupwinsock();
@@ -59,8 +59,8 @@ class AuctionServer
     void addClientToRoom(ClientInfo client);
     void removeClient(ClientInfo client);
     void broadcastToRoom(const string &auction_code, const string &message);
-    void broadcastToMonitor(const string &message);  // ADDED: Declaration
-    void removeSocketFromList(SOCKET client_socket);  // ADDED: New helper function
+    void broadcastToMonitor(const string &message);  
+    void removeSocketFromList(SOCKET client_socket); 
     vector<string> split(string &s,char delimiter);
 
 public:

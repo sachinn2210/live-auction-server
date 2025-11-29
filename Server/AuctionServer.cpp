@@ -201,7 +201,6 @@ void AuctionServer::manageclient(SOCKET client_socket) {
 
             try {
                 double bid = stod(bid_value);
-                // Include auction_code in broadcast to monitor
                 string message = "NEW HIGH BID! " + to_string(bid) + " by " + username + " in " + auction_code + "\n";
                 broadcastToRoom(auction_code, message);
                 broadcastToMonitor(message);
@@ -219,7 +218,6 @@ void AuctionServer::manageclient(SOCKET client_socket) {
     }
 }
 
-// Broadcast to all clients except avoid_socket
 void AuctionServer::broadcastMessage(string &message, SOCKET avoid_socket) {
     lock_guard<mutex> lock(clients_mutex);
     for (SOCKET client_sock : client_sockets) {
@@ -233,7 +231,6 @@ void AuctionServer::broadcastMessage(string &message, SOCKET avoid_socket) {
     }
 }
 
-// Send message to monitor
 void AuctionServer::broadcastToMonitor(const string &message) {
     lock_guard<mutex> lock(clients_mutex);
     if (monitor_socket != INVALID_SOCKET) {
@@ -247,7 +244,6 @@ void AuctionServer::broadcastToMonitor(const string &message) {
     }
 }
 
-// Stop the server
 void AuctionServer::stopServer() {
     lock_guard<mutex> lock(clients_mutex);
 
@@ -269,7 +265,6 @@ void AuctionServer::stopServer() {
     }
 }
 
-// Utility: split a string by delimiter
 vector<string> AuctionServer::split(string &s, char delimiter) {
     vector<string> tokens;
     string token;
