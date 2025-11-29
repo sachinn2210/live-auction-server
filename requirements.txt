@@ -1,0 +1,6 @@
+streamlit>=1.28.0
+mysql-connector-python>=8.0.33
+pymongo>=4.5.0
+websockets>=11.0.3
+streamlit-autorefresh>=0.0.6
+psutil>=5.9.5

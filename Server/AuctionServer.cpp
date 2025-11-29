@@ -1,3 +1,7 @@
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
 #include "AuctionServer.h"
 #include <sstream>
 #include <algorithm>
@@ -111,12 +115,12 @@ void AuctionServer::startServer() {
         }
 
         {
-            lock_guard<mutex> lock(clients_mutex);
+            std::lock_guard<std::mutex> lock(clients_mutex);
             client_sockets.push_back(client_socket);
             cout << "Client connected. Total clients: " << client_sockets.size() << endl;
         }
 
-        thread client_thread(&AuctionServer::manageclient, this, client_socket);
+        std::thread client_thread(&AuctionServer::manageclient, this, client_socket);
         client_thread.detach();
     }
 }
@@ -140,7 +144,7 @@ void AuctionServer::manageclient(SOCKET client_socket) {
                 removeClient(client);
                 removeSocketFromList(client_socket);
             } else {
-                lock_guard<mutex> lock(clients_mutex);
+                std::lock_guard<std::mutex> lock(clients_mutex);
                 if (monitor_socket == client_socket) {
                     monitor_socket = INVALID_SOCKET;
                 }
@@ -160,7 +164,7 @@ void AuctionServer::manageclient(SOCKET client_socket) {
 
         if (msg == "MONITOR_CLIENT") {
             is_monitor = true;
-            lock_guard<mutex> lock(clients_mutex);
+            std::lock_guard<std::mutex> lock(clients_mutex);
 
             if (monitor_socket != INVALID_SOCKET) {
                 cout << "[MONITOR] Replacing existing monitor client\n";
@@ -219,7 +223,7 @@ void AuctionServer::manageclient(SOCKET client_socket) {
 }
 
 void AuctionServer::broadcastMessage(string &message, SOCKET avoid_socket) {
-    lock_guard<mutex> lock(clients_mutex);
+    std::lock_guard<std::mutex> lock(clients_mutex);
     for (SOCKET client_sock : client_sockets) {
         if (client_sock != INVALID_SOCKET && client_sock != avoid_socket) {
             int sent = send(client_sock, message.c_str(), (int)message.length(), 0);
@@ -232,7 +236,7 @@ void AuctionServer::broadcastMessage(string &message, SOCKET avoid_socket) {
 }
 
 void AuctionServer::broadcastToMonitor(const string &message) {
-    lock_guard<mutex> lock(clients_mutex);
+    std::lock_guard<std::mutex> lock(clients_mutex);
     if (monitor_socket != INVALID_SOCKET) {
         int sent = send(monitor_socket, message.c_str(), (int)message.length(), 0);
         if (sent == SOCKET_ERROR) {
@@ -245,7 +249,7 @@ void AuctionServer::broadcastToMonitor(const string &message) {
 }
 
 void AuctionServer::stopServer() {
-    lock_guard<mutex> lock(clients_mutex);
+    std::lock_guard<std::mutex> lock(clients_mutex);
 
     for (SOCKET client_socket : client_sockets) {
         shutdown(client_socket, SD_BOTH);
@@ -276,13 +280,13 @@ vector<string> AuctionServer::split(string &s, char delimiter) {
 }
 
 void AuctionServer::addClientToRoom(ClientInfo client) {
-    lock_guard<mutex> lock(clients_mutex);
+    std::lock_guard<std::mutex> lock(clients_mutex);
     auction_rooms[client.auction_code].push_back(client);
     cout << "[INFO] " << client.username << " joined auction " << client.auction_code << endl;
 }
 
 void AuctionServer::removeClient(ClientInfo client) {
-    lock_guard<mutex> lock(clients_mutex);
+    std::lock_guard<std::mutex> lock(clients_mutex);
     auto &room = auction_rooms[client.auction_code];
     room.erase(remove_if(room.begin(), room.end(),
                          [&](const ClientInfo &c) { return c.socket == client.socket; }),
@@ -298,7 +302,7 @@ void AuctionServer::removeClient(ClientInfo client) {
 }
 
 void AuctionServer::removeSocketFromList(SOCKET client_socket) {
-    lock_guard<mutex> lock(clients_mutex);
+    std::lock_guard<std::mutex> lock(clients_mutex);
     client_sockets.erase(remove(client_sockets.begin(), client_sockets.end(), client_socket),
                          client_sockets.end());
     shutdown(client_socket, SD_BOTH);
@@ -308,7 +312,7 @@ void AuctionServer::removeSocketFromList(SOCKET client_socket) {
 }
 
 void AuctionServer::broadcastToRoom(const string &auction_code, const string &message) {
-    lock_guard<mutex> lock(clients_mutex);
+    std::lock_guard<std::mutex> lock(clients_mutex);
     auto &room = auction_rooms[auction_code];
     for (auto &client : room) {
         send(client.socket, message.c_str(), (int)message.length(), 0);

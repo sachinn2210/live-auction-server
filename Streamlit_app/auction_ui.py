@@ -356,14 +356,56 @@ def load_css_file(filename="index.css"):
         return ""
 
 custom_css = load_css_file("index.css")
-st.markdown(custom_css, unsafe_allow_html=True)
 # 1. Page Setup
-st.set_page_config(page_title="Live Auction Dashboard", layout="wide", initial_sidebar_state="expanded",menu_items={'About': 'A multi-threaded TCP-based live auction system UI.'})
-# 2. Custom CSS for a Professional Look (Dark Mode Palette)
+st.set_page_config(page_title="Live Auction Management Console", layout="wide", initial_sidebar_state="expanded", menu_items={'About': 'A multi-threaded TCP-based live auction system UI.'})
 
+# Load CSS once
 st.markdown(custom_css, unsafe_allow_html=True)
-st.markdown("<h1 style='text-align: center; color: #3498db;'> 🚀 Live Auction Management Console</h1>", unsafe_allow_html=True)
-#st.markdown("---") # Replaced st.divider() with st.markdown("---") for better visual consistency
+
+# Beautiful Animated Header
+header_html = """
+<div style="text-align: center; padding: 2rem 0; margin-bottom: 2rem;">
+    <div style="position: relative; display: inline-block;">
+        <h1 style="
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+            margin: 0;
+            text-shadow: 0 0 40px rgba(139, 92, 246, 0.5);
+            font-family: 'Poppins', sans-serif;
+            letter-spacing: -0.02em;
+        ">
+            🚀 Live Auction Management Console
+        </h1>
+        <div style="
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #8b5cf6, transparent);
+            border-radius: 2px;
+            animation: expand 2s ease-in-out infinite;
+        "></div>
+    </div>
+    <p style="
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.2rem;
+        margin-top: 1rem;
+        font-weight: 300;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    ">
+        Real-time bidding • Secure transactions • Live updates
+    </p>
+</div>
+"""
+st.markdown(header_html, unsafe_allow_html=True)
 
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -380,37 +422,103 @@ if not st.session_state.logged_in:
     col_login_spacer, col_login, col_reg, col_login_spacer_end = st.columns([1, 2, 2, 1])
     
     with col_login:
-        with st.container(border=True): # Use a container for visual separation
-            st.markdown("## 🔑 Login")
-            st.markdown("<p style='color:black;'>Access your auction dashboard.</p>", unsafe_allow_html=True)
-            username = st.text_input("Username", key="login_user", placeholder="Enter your username")
-            password = st.text_input("Password", type="password", key="login_pass", placeholder="Enter your password")
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("Login", use_container_width=True, type="primary"):
-                user = validate_user(username, password)
-                if user:
-                    st.session_state.logged_in = True
-                    st.session_state.role = user["role"]
-                    st.session_state.username = user["username"]
-                    st.toast(f"Welcome {user['username']} ({user['role']})!") # Use toast instead of st.success
-                    st.rerun()
-                else:
-                    st.error("Invalid username or password.")
+        login_card = """
+        <div style="
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.5s ease-out;
+        ">
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div style="
+                    width: 60px;
+                    height: 60px;
+                    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+                    border-radius: 50%;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 2rem;
+                    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+                    margin-bottom: 1rem;
+                ">🔑</div>
+                <h2 style="
+                    margin: 0;
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    font-size: 1.8rem;
+                    font-weight: 800;
+                ">Login</h2>
+                <p style="color: #6b7280; margin-top: 0.5rem;">Access your auction dashboard</p>
+            </div>
+        </div>
+        """
+        st.markdown(login_card, unsafe_allow_html=True)
+        username = st.text_input("Username", key="login_user", placeholder="Enter your username")
+        password = st.text_input("Password", type="password", key="login_pass", placeholder="Enter your password")
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("Login", use_container_width=True, type="primary"):
+            user = validate_user(username, password)
+            if user:
+                st.session_state.logged_in = True
+                st.session_state.role = user["role"]
+                st.session_state.username = user["username"]
+                st.toast(f"Welcome {user['username']} ({user['role']})!") # Use toast instead of st.success
+                st.rerun()
+            else:
+                st.error("Invalid username or password.")
     
     with col_reg:
-        with st.container(border=True): # Use a container for visual separation
-            st.markdown("## 📝 Register")
-            st.markdown("<p style='color:black;'>Join the platform as a Buyer, Seller, or Admin.</p>", unsafe_allow_html=True)
-            new_user = st.text_input("Username", key="reg_user", placeholder="Choose a username")
-            new_pass = st.text_input("Password", type="password", key="reg_pass", placeholder="Choose a strong password")
-            new_email = st.text_input("Email (Optional)", key="reg_email", placeholder="Enter your email for notifications")
-            role = st.selectbox("Role", ["Admin", "Seller", "Buyer"], index=2)
-            if st.button("Register", use_container_width=True):
-                if new_user and new_pass:
-                    if register_user(new_user, new_pass, role, new_email):
-                        pass
-                else:
-                    st.warning("Please fill all required fields (Username, Password).")
+        register_card = """
+        <div style="
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.5s ease-out;
+        ">
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div style="
+                    width: 60px;
+                    height: 60px;
+                    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+                    border-radius: 50%;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 2rem;
+                    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+                    margin-bottom: 1rem;
+                ">📝</div>
+                <h2 style="
+                    margin: 0;
+                    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    font-size: 1.8rem;
+                    font-weight: 800;
+                ">Register</h2>
+                <p style="color: #6b7280; margin-top: 0.5rem;">Join as Buyer, Seller, or Admin</p>
+            </div>
+        </div>
+        """
+        st.markdown(register_card, unsafe_allow_html=True)
+        new_user = st.text_input("Username", key="reg_user", placeholder="Choose a username")
+        new_pass = st.text_input("Password", type="password", key="reg_pass", placeholder="Choose a strong password")
+        new_email = st.text_input("Email (Optional)", key="reg_email", placeholder="Enter your email for notifications")
+        role = st.selectbox("Role", ["Admin", "Seller", "Buyer"], index=2)
+        if st.button("Register", use_container_width=True):
+            if new_user and new_pass:
+                if register_user(new_user, new_pass, role, new_email):
+                    pass
+            else:
+                st.warning("Please fill all required fields (Username, Password).")
 
 # AUTHENTICATED UI
 else:
@@ -419,8 +527,48 @@ else:
 
     # 2. Refined Sidebar
     with st.sidebar:
-        st.markdown(f"## 👤 {username}")
-        st.markdown(f"**Role:** <span style='color:  green;'>{role}</span>", unsafe_allow_html=True)
+        sidebar_header = f"""
+        <div style="
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+            text-align: center;
+        ">
+            <div style="
+                width: 80px;
+                height: 80px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 2.5rem;
+                margin-bottom: 1rem;
+                border: 3px solid rgba(255, 255, 255, 0.3);
+            ">👤</div>
+            <h3 style="
+                color: white;
+                margin: 0;
+                font-size: 1.5rem;
+                font-weight: 800;
+                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            ">{username}</h3>
+            <div style="
+                display: inline-block;
+                padding: 6px 16px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 20px;
+                margin-top: 0.5rem;
+                color: white;
+                font-weight: 600;
+                font-size: 0.9rem;
+                backdrop-filter: blur(10px);
+            ">{role}</div>
+        </div>
+        """
+        st.markdown(sidebar_header, unsafe_allow_html=True)
 
         # Navigation based on role
         nav_options = {
@@ -580,16 +728,86 @@ else:
     # 4. Admin UI: Server Control
     elif role == "Admin" and page == "Server Control":
         st.header("⚙️ Auction Server Control Panel")
+        
+        server_status_html = """
+        <div style="
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        ">
+        """
+        st.markdown(server_status_html, unsafe_allow_html=True)
+        
         col_status, col_button = st.columns([3, 1])
+        server_running = is_server_running()
 
-        if is_server_running():
-            col_status.metric(label="Server Status", value="ACTIVE", delta="Running")
+        if server_running:
+            status_card = """
+            <div style="
+                background: linear-gradient(135deg, #10b981, #059669);
+                padding: 1.5rem;
+                border-radius: 16px;
+                color: white;
+                box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+                animation: pulse 2s ease-in-out infinite;
+            ">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="
+                        width: 50px;
+                        height: 50px;
+                        background: rgba(255, 255, 255, 0.2);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 1.5rem;
+                    ">✅</div>
+                    <div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">Server Status</div>
+                        <div style="font-size: 1.8rem; font-weight: 800;">ACTIVE</div>
+                        <div style="font-size: 0.85rem; opacity: 0.8;">Running smoothly</div>
+                    </div>
+                </div>
+            </div>
+            """
+            col_status.markdown(status_card, unsafe_allow_html=True)
             with col_button:
                 if st.button("🛑 Stop Server", type="secondary", use_container_width=True):
                     kill_server()
                     st.rerun()
         else:
-            col_status.metric(label="Server Status", value="INACTIVE", delta="- Not Running")
+            status_card = """
+            <div style="
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+                padding: 1.5rem;
+                border-radius: 16px;
+                color: white;
+                box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+            ">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="
+                        width: 50px;
+                        height: 50px;
+                        background: rgba(255, 255, 255, 0.2);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 1.5rem;
+                    ">⏸️</div>
+                    <div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">Server Status</div>
+                        <div style="font-size: 1.8rem; font-weight: 800;">INACTIVE</div>
+                        <div style="font-size: 0.85rem; opacity: 0.8;">Not Running</div>
+                    </div>
+                </div>
+            </div>
+            """
+            col_status.markdown(status_card, unsafe_allow_html=True)
             with col_button:
                 if st.button("🚀 Start Server", type="primary", use_container_width=True):
                     if not SERVER_EXE.exists():
@@ -602,6 +820,8 @@ else:
                             st.rerun()
                         except Exception as e:
                             st.error(f"Failed to start server: {e}")
+        
+        st.markdown("</div>", unsafe_allow_html=True)
 
     # 5. Admin UI: Closed Auctions
     elif role == "Admin" and page == "Closed Auctions":
@@ -641,14 +861,70 @@ else:
     # 6. Buyer UI: Active Auctions Listing & Join
     elif role == "Buyer" and page == "Active Auctions" and not st.session_state.get("in_auction_room", False):
         st_autorefresh(interval=10000, key="auction_list_refresh")
-        st.header("💰 Live Auctions")
         
-        # Join by Code - put in a compact container
-        with st.container(border=True):
-            st.subheader("🎯 Join Auction via Code")
-            col_code, col_button = st.columns([3, 1])
-            code_input = col_code.text_input("Enter Auction Code (e.g., AUC-1A2B)", label_visibility="collapsed", placeholder="AUC-XXXX")
-            if col_button.button("Join Now", use_container_width=True, type="primary"):
+        # Beautiful Header
+        header_html = """
+        <div style="
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 2rem;
+            border-radius: 24px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+            text-align: center;
+            color: white;
+        ">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem;">💰</div>
+            <h2 style="
+                color: white;
+                margin: 0;
+                font-size: 2.5rem;
+                font-weight: 900;
+                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            ">Live Auctions</h2>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Join active auctions and place your bids</p>
+        </div>
+        """
+        st.markdown(header_html, unsafe_allow_html=True)
+        
+        # Join by Code - Enhanced container
+        join_card = """
+        <div style="
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        ">
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div style="
+                    width: 60px;
+                    height: 60px;
+                    background: linear-gradient(135deg, #f59e0b, #d97706);
+                    border-radius: 50%;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 2rem;
+                    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+                    margin-bottom: 1rem;
+                ">🎯</div>
+                <h3 style="
+                    margin: 0;
+                    background: linear-gradient(135deg, #f59e0b, #d97706);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    font-size: 1.5rem;
+                    font-weight: 800;
+                ">Join Auction via Code</h3>
+            </div>
+        </div>
+        """
+        st.markdown(join_card, unsafe_allow_html=True)
+        col_code, col_button = st.columns([3, 1])
+        code_input = col_code.text_input("Enter Auction Code (e.g., AUC-1A2B)", label_visibility="collapsed", placeholder="AUC-XXXX")
+        if col_button.button("Join Now", use_container_width=True, type="primary"):
                 conn = get_db_connection()
                 cursor = conn.cursor(dictionary=True)
                 cursor.execute("SELECT * FROM auctions WHERE auction_code=%s AND status='active'", (code_input,))
@@ -663,17 +939,69 @@ else:
                     st.error("Invalid or closed auction code.")
 
         st.markdown("---")
-        st.subheader("Auction Feed")
+        
+        # Enhanced Auction Feed Header
+        feed_header = """
+        <div style="
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1rem;
+        ">
+            <h3 style="
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                font-size: 1.8rem;
+                font-weight: 800;
+                margin: 0;
+            ">🔥 Auction Feed</h3>
+        </div>
+        """
+        st.markdown(feed_header, unsafe_allow_html=True)
+        
         auctions = get_active_auctions()
         
         if not auctions:
-                st.info("No active auctions right now. Please check back later.")
+            empty_state = """
+            <div style="
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                border-radius: 24px;
+                padding: 4rem 2rem;
+                text-align: center;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            ">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">🔍</div>
+                <h3 style="
+                    color: #6b7280;
+                    font-size: 1.5rem;
+                    font-weight: 700;
+                    margin: 0;
+                ">No Active Auctions</h3>
+                <p style="color: #9ca3af; margin-top: 0.5rem;">Check back later for new auctions</p>
+            </div>
+            """
+            st.markdown(empty_state, unsafe_allow_html=True)
         else:
                 # Use a grid layout for better density
                 cols = st.columns(2, gap="large") 
                 for i, a in enumerate(auctions):
                     with cols[i % 2]: # Cycle between 2 columns
-                        with st.container(border=True):
+                        auction_card_html = f"""
+                        <div style="
+                            background: rgba(255, 255, 255, 0.95);
+                            backdrop-filter: blur(20px);
+                            border-radius: 24px;
+                            padding: 1.5rem;
+                            border: 1px solid rgba(255, 255, 255, 0.3);
+                            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                            transition: all 0.3s ease;
+                            margin-bottom: 1.5rem;
+                        " class="auction-card">
+                        """
+                        st.markdown(auction_card_html, unsafe_allow_html=True)
+                        with st.container(border=False):
                             
                             # Timer logic (unchanged)
                             start = a.get("start_time")
@@ -705,19 +1033,15 @@ else:
                                 
                             with col_info:
                                 st.markdown(f"**{a.get('product_name')}** (`{a.get('auction_code')}`)")
-                                st.metric("Current Bid", f"${a.get('current_bid', a.get('base_price'))}", help=f"Highest Bidder: {a.get('current_bidder', 'No bids yet')}")
                                 
-                                # Use a small alert for the timer
-                                # Timer Display Logic
+                                # Timer Display Logic with color coding
                                 timer_color = "#3498db"
                                 if remaining < 60 and remaining > 0:
-                                     timer_color = "#e74c3c"
+                                    timer_color = "#e74c3c"
                                 elif remaining <= 0:
-                                     timer_color = "#95a5a6" # Grey for ended
-                                else:
-                                     st.caption(f"Time Remaining: **{timer}**")
-                            
-                                st.markdown(f"Time Remaining: <span style='color: {timer_color}; font-weight: bold;'>{timer}</span>", unsafe_allow_html=True)
+                                    timer_color = "#95a5a6"  # Grey for ended
+                                
+                                st.markdown(f"<p style='margin: 0.5rem 0;'><strong>Time Remaining:</strong> <span style='color: {timer_color}; font-weight: bold; font-size: 1.1rem;'>{timer}</span></p>", unsafe_allow_html=True)
                                 
                                 st.metric("Current Bid", f"${a.get('current_bid', a.get('base_price'))}", help=f"Highest Bidder: {a.get('current_bidder', 'No bids yet')}")
                             st.markdown("---")
@@ -773,6 +1097,9 @@ else:
                                                     <p style="font-size: 10px; margin-top: 2px;">{user_info["username"]}</p>
                                                 </div>
                                             """, unsafe_allow_html=True)
+                        
+                        # Close auction card div
+                        st.markdown("</div>", unsafe_allow_html=True)
 
 
     # 7. Buyer UI: Inside Auction Room (Bidding)
@@ -817,13 +1144,47 @@ else:
             else:
                 st.toast(f"✅ Connected to auction {auction.get('auction_code')}!")
 
-        # Main Auction Room UI
-        st.header(f"🔨 Auction Room — {auction.get('product_name')}")
+        # Main Auction Room UI with Beautiful Header
+        auction_header = f"""
+        <div style="
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 2rem;
+            border-radius: 24px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+            text-align: center;
+            color: white;
+        ">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔨</div>
+            <h2 style="
+                color: white;
+                margin: 0;
+                font-size: 2rem;
+                font-weight: 800;
+                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            ">Auction Room</h2>
+            <p style="
+                margin: 0.5rem 0 0 0;
+                font-size: 1.2rem;
+                opacity: 0.9;
+            ">{auction.get('product_name')}</p>
+            <div style="
+                display: inline-block;
+                padding: 8px 20px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 20px;
+                margin-top: 1rem;
+                font-weight: 600;
+                backdrop-filter: blur(10px);
+            ">Code: {auction.get('auction_code')}</div>
+        </div>
+        """
+        st.markdown(auction_header, unsafe_allow_html=True)
         
         current_bid = auction.get("current_bid") or auction.get("base_price")
         current_bidder = auction.get("current_bidder") or "No bids yet"
         
-        # Top-level metrics for quick info
+        # Top-level metrics for quick info with enhanced styling
         col_m1, col_m2, col_m3 = st.columns(3)
         delta_text = ""
         delta_color = "off"
@@ -836,6 +1197,23 @@ else:
         else:
             delta_text = "Start Bid"
             delta_color = "off"
+        
+        # Enhanced metric cards
+        metric_style = """
+        <style>
+        [data-testid="stMetricValue"] {
+            font-size: 2rem !important;
+            font-weight: 900 !important;
+        }
+        [data-testid="stMetricLabel"] {
+            font-size: 0.9rem !important;
+            font-weight: 600 !important;
+            opacity: 0.8;
+        }
+        </style>
+        """
+        st.markdown(metric_style, unsafe_allow_html=True)
+        
         col_m1.metric("Current Highest Bid", f"${current_bid}", delta=delta_text, delta_color=delta_color)
         col_m2.metric("Highest Bidder", current_bidder, help="The user currently in the lead.")
         col_m3.metric("Base Price", f"${auction.get('base_price')}")
@@ -880,13 +1258,74 @@ else:
                 mins, secs = divmod(int(remaining), 60)
                 timer_display = f"{mins:02d}:{secs:02d}"
 
-           # Display Timer prominently (using HTML for large font and color)
+           # Display Timer prominently with enhanced styling
                 if remaining <= 0:
-                    st.markdown(f"<h2 style='text-align: center; color: #e74c3c;'>🔒 AUCTION ENDED</h2>", unsafe_allow_html=True)
+                    timer_html = f"""
+                    <div style="
+                        background: linear-gradient(135deg, #ef4444, #dc2626);
+                        padding: 2rem;
+                        border-radius: 20px;
+                        text-align: center;
+                        color: white;
+                        box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
+                        animation: pulse 2s ease-in-out infinite;
+                    ">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔒</div>
+                        <h2 style="
+                            color: white;
+                            margin: 0;
+                            font-size: 2rem;
+                            font-weight: 800;
+                            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                        ">AUCTION ENDED</h2>
+                    </div>
+                    """
+                    st.markdown(timer_html, unsafe_allow_html=True)
                 elif remaining < 30:
-                    st.markdown(f"<h2 style='text-align: center; color: #e74c3c;'>🔥 LAST CHANCE: {timer_display}</h2>", unsafe_allow_html=True)
+                    timer_html = f"""
+                    <div style="
+                        background: linear-gradient(135deg, #f59e0b, #d97706);
+                        padding: 2rem;
+                        border-radius: 20px;
+                        text-align: center;
+                        color: white;
+                        box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4);
+                        animation: pulse 1s ease-in-out infinite;
+                    ">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔥</div>
+                        <h2 style="
+                            color: white;
+                            margin: 0;
+                            font-size: 2rem;
+                            font-weight: 800;
+                            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                        ">LAST CHANCE: {timer_display}</h2>
+                    </div>
+                    """
+                    st.markdown(timer_html, unsafe_allow_html=True)
                 else:
-                    st.markdown(f"<h2 style='text-align: center; color: #3498db;'>⏱️ Time Left: {timer_display}</h2>", unsafe_allow_html=True)
+                    timer_html = f"""
+                    <div style="
+                        background: linear-gradient(135deg, #3b82f6, #2563eb);
+                        padding: 2rem;
+                        border-radius: 20px;
+                        text-align: center;
+                        color: white;
+                        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+                    ">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">⏱️</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem;">Time Remaining</div>
+                        <h2 style="
+                            color: white;
+                            margin: 0;
+                            font-size: 2.5rem;
+                            font-weight: 900;
+                            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                            font-family: 'Courier New', monospace;
+                        ">{timer_display}</h2>
+                    </div>
+                    """
+                    st.markdown(timer_html, unsafe_allow_html=True)
 
             st.markdown("---")
             st.subheader("Place Your Bid")

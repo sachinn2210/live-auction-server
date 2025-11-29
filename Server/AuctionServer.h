@@ -1,16 +1,26 @@
 //this header file contains AuctionServer class.
 
 #pragma once //this preprocessor directive ensures that file is included only once while we compile.
-#include<iostream>
-#include<vector>
-#include<thread>
-#include<mutex>
-#include<string>
-//Including Libraries for socket 
-#include<winsock2.h>//this library is for socket programming
-#include<ws2tcpip.h>//this library provides getaddrinfo functions
-#include<map>//for auction room mapping
-#include<algorithm>
+
+// Windows-specific defines (must come before winsock2.h)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+// Standard C++ headers first
+#include <iostream>
+#include <vector>
+#include <string>
+#include <map>
+#include <algorithm>
+#include <thread>
+#include <mutex>
+#include <sstream>
+
+// Windows socket headers (must come after standard headers)
+#include <winsock2.h>  // this library is for socket programming
+#include <ws2tcpip.h>  // this library provides getaddrinfo functions
+
 using namespace std;
 
 //Defining constants here .
@@ -42,8 +52,8 @@ struct ClientInfo{
 class AuctionServer
 {
     AuctionItem current_item;
-    mutex clients_mutex;
-    mutex auction_mutex;
+    std::mutex clients_mutex;
+    std::mutex auction_mutex;
     vector<SOCKET>client_sockets;
 
     map<string,vector<ClientInfo>>auction_rooms;
